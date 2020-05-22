@@ -1,0 +1,46 @@
+# PHP CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-php/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/php:7.2.9-cli-stretch-node
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/mysql:9.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Restore Composer cache
+      - restore_cache:
+          keys:
+            - composer-dependencies-{{ checksum "composer.json" }}
+            - composer-dependencies-
+
+      # Fill in some values so compsoer doesn't get upset about the template
+      - run: sed -i 's/{vendor}/vendor/g' composer.json
+      - run: sed -i 's/{name}/name/g' composer.json
+      - run: sed -i 's/{url}/http:\/\/example.com/g' composer.json
+      - run: sed -i 's/{description}/description/g' composer.json
+      - run: sed -i 's/{namespace}/namespace\\\\/g' composer.json
+      - run: sed -i 's/{vendor}/vendor/g' composer.json
+
+      # Execute Composer install
+      - run: composer --no-interaction --optimize-autoloader install
+
+      # Save Composer cache
+      - save_cache:
+          paths:
+            - ./vendor
+          key: composer-dependencies-{{ checksum "composer.json" }}
+
+      # run tests!
+      - run: ./vendor/bin/phpunit
