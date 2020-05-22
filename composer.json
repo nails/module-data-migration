@@ -7,19 +7,20 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "nails\/common": "dev-develop"
+        "nails\/common": "dev-develop",
+        "hellopablo\/data-migration": "dev-develop"
     },
     "require-dev": {
         "phpunit\/phpunit": "8.*"
     },
     "autoload": {
         "psr-4": {
-            "Nails\\Seo\\": "src\/"
+            "Nails\\DataMigration\\": "src\/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Nails\\Seo\\Tests\\": "src\/"
+            "Nails\\DataMigration\\Tests\\": "src\/"
         }
     },
     "extra": {
