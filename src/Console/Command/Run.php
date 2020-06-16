@@ -55,12 +55,18 @@ class Run extends Base
 
         /** @var DataMigration $oService */
         $oService   = Factory::service('DataMigration', Constants::MODULE_SLUG);
+        $bDryRun    = (bool) $oInput->getOption('dry-run');
         $aPipelines = $oService->getPipelines();
 
         if (empty($aPipelines)) {
             $oOutput->writeln('No data migration pipelines discovered.');
             $oOutput->writeln('');
             return static::EXIT_CODE_SUCCESS;
+        }
+
+        if ($bDryRun) {
+            $this->outputBlock(['Dry-run: migrations will not be comitted'], 'warning');
+            $oOutput->writeln('');
         }
 
         $oOutput->writeln('The following data migration pipelines will be run:');
@@ -73,11 +79,9 @@ class Run extends Base
         $oOutput->writeln('');
 
         if ($this->confirm('Continue?', true)) {
-            if ($oInput->getOption('dry-run')) {
-                $oService->dryRun($aPipelines, $oOutput);
-            } else {
-                $oService->run($aPipelines, $oOutput);
-            }
+            $oService
+                ->setDryRun($bDryRun)
+                ->run($aPipelines, $oOutput);
         }
 
         return static::EXIT_CODE_SUCCESS;

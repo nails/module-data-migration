@@ -79,23 +79,38 @@ class DataMigration
      */
     public function run(array $aPipelines, OutputInterface $oOutput = null): self
     {
-        $this->oManager->run($aPipelines, $oOutput);
+        $this
+            ->oManager
+            ->setOutputInterface($oOutput)
+            ->run($aPipelines, $oOutput);
+
         return $this;
     }
 
     // --------------------------------------------------------------------------
 
     /**
-     * Runs the supplied migration Pipelines (as a dry-run)
+     * Set the dry-run mode
      *
-     * @param Pipeline[]           $aPipelines The Pipelines to run
-     * @param OutputInterface|null $oOutput    An OutputInterface to log to
+     * @param bool $bDryRun Whether to turn on dry-run mode or not
      *
      * @return $this
      */
-    public function dryRun(array $aPipelines, OutputInterface $oOutput = null): self
+    public function setDryRun(bool $bDryRun): self
     {
-        $this->oManager->dryRun($aPipelines, $oOutput);
+        $this->oManager->setDryRun($bDryRun);
         return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the system is in dry run mode or not
+     *
+     * @return bool
+     */
+    public function isDryRun(): bool
+    {
+        return $this->oManager->isDryRun();
     }
 }
