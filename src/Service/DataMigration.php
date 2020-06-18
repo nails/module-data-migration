@@ -13,9 +13,16 @@ namespace Nails\DataMigration\Service;
 
 use HelloPablo\DataMigration\Interfaces\Pipeline;
 use HelloPablo\DataMigration\Manager;
+use Nails\Common\Service\FileCache;
 use Nails\Components;
+use Nails\Factory;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class DataMigration
+ *
+ * @package Nails\DataMigration\Service
+ */
 class DataMigration
 {
     /** @var Manager */
@@ -28,7 +35,18 @@ class DataMigration
      */
     public function __construct(Manager $oManager = null)
     {
-        $this->oManager = $oManager ?? new Manager();
+        if ($oManager === null) {
+            /** @var FileCache $oFileCache */
+            $oFileCache = Factory::service('FileCache');
+            /** @var \DateTime $oNow */
+            $oNow = \Nails\Factory::factory('DateTime');
+
+            $oManager = new Manager(
+                $oFileCache->getDir() . 'data-migration-' . $oNow->format('Ymdhis') . '-' . uniqid()
+            );
+        }
+
+        $this->oManager = $oManager;
     }
 
     // --------------------------------------------------------------------------
@@ -70,19 +88,49 @@ class DataMigration
     // --------------------------------------------------------------------------
 
     /**
-     * Runs the supplied migration Pipelines
+     * Prepares the supplied migration Pipelines
      *
-     * @param Pipeline[]           $aPipelines The Pipelines to run
+     * @param Pipeline[]           $aPipelines The Pipelines to prepare
      * @param OutputInterface|null $oOutput    An OutputInterface to log to
      *
      * @return $this
      */
-    public function run(array $aPipelines, OutputInterface $oOutput = null): self
+    public function prepare(array $aPipelines, OutputInterface $oOutput = null): self
     {
         $this
             ->oManager
             ->setOutputInterface($oOutput)
-            ->run($aPipelines, $oOutput);
+            ->prepare($aPipelines);
+
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * @return array
+     */
+    public function prepareErrors(): array
+    {
+        return $this->oManager->getPrepareErrors();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Commits the supplied migration Pipelines
+     *
+     * @param Pipeline[]           $aPipelines The Pipelines to commit
+     * @param OutputInterface|null $oOutput    An OutputInterface to log to
+     *
+     * @return $this
+     */
+    public function commit(array $aPipelines, OutputInterface $oOutput = null): self
+    {
+        $this
+            ->oManager
+            ->setOutputInterface($oOutput)
+            ->commit($aPipelines);
 
         return $this;
     }

@@ -69,7 +69,7 @@ class Run extends Base
             $oOutput->writeln('');
         }
 
-        $oOutput->writeln('The following data migration pipelines will be run:');
+        $oOutput->writeln('The following data migration pipelines will be processed:');
         foreach ($aPipelines as $oRecipe) {
             $oOutput->writeln(sprintf(
                 '– <info>%s</info>',
@@ -81,7 +81,38 @@ class Run extends Base
         if ($this->confirm('Continue?', true)) {
             $oService
                 ->setDryRun($bDryRun)
-                ->run($aPipelines, $oOutput);
+                ->prepare($aPipelines, $oOutput);
+
+            $oOutput->writeln('');
+
+            $aErrors = $oService->prepareErrors();
+
+            if (!empty($aErrors)) {
+
+                $oOutput->writeln('<error>There were errors during preparation:</error>');
+                $oOutput->writeln('');
+
+                foreach ($aErrors as $oError) {
+
+                    $oOutput->writeln(sprintf(
+                        '[<info>%s</info>] Source ID: <info>%s</info>; %s',
+                        $oError->pipeline,
+                        $oError->source_id,
+                        $oError->error,
+                    ));
+                }
+
+                $oOutput->writeln('');
+                $oOutput->writeln('<error>' . count($aErrors) . ' errors detected, migrations were NOT comitted</error>');
+                $oOutput->writeln('');
+
+            } elseif ($this->confirm('Pipelines prepared, ready to commit?', true)) {
+                $oService->commit($aPipelines, $oOutput);
+
+                $oOutput->writeln('');
+                $oOutput->writeln('Finished data migrations');
+                $oOutput->writeln('');
+            }
         }
 
         return static::EXIT_CODE_SUCCESS;
