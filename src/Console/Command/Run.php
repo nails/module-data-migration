@@ -35,7 +35,8 @@ class Run extends Base
         $this
             ->setName('datamigration:run')
             ->setDescription('Runs data migration recipes')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Whether to perform a dry-run or not');
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Whether to perform a dry-run or not')
+            ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode');
     }
 
     // --------------------------------------------------------------------------

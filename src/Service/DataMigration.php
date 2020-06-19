@@ -67,6 +67,85 @@ class DataMigration
     // --------------------------------------------------------------------------
 
     /**
+     * Sets the output interfce to use
+     *
+     * @param OutputInterface|null $oOutputInterface
+     */
+    public function setOutputInterface(?OutputInterface $oOutputInterface): self
+    {
+        $this->oManager->setOutputInterface($oOutputInterface);
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the active OutputInterface
+     *
+     * @return OutputInterface|null
+     */
+    public function getOutputInterface(): ?OutputInterface
+    {
+        return $this->oManager->getOutputInterface();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the debug mode
+     *
+     * @param bool $bDebug Whether to turn on debug mode or not
+     *
+     * @return $this
+     */
+    public function setDebug(bool $bDebug): self
+    {
+        $this->oManager->setDebug($bDebug);
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the system is in debug mode or not
+     *
+     * @return bool
+     */
+    public function isDebug(): bool
+    {
+        return $this->oManager->isDebug();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Set the dry-run mode
+     *
+     * @param bool $bDryRun Whether to turn on dry-run mode or not
+     *
+     * @return $this
+     */
+    public function setDryRun(bool $bDryRun): self
+    {
+        $this->oManager->setDryRun($bDryRun);
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the system is in dry-run mode or not
+     *
+     * @return bool
+     */
+    public function isDryRun(): bool
+    {
+        return $this->oManager->isDryRun();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Returns all discovered Pipelines
      *
      * @return Pipeline[]
@@ -93,16 +172,14 @@ class DataMigration
     /**
      * Checks connectors
      *
-     * @param Pipeline[]           $aPipelines The Pipelines to check
-     * @param OutputInterface|null $oOutput    An OutputInterface to log to
+     * @param Pipeline[] $aPipelines The Pipelines to check
      *
      * @return $this
      */
-    public function checkConnectors(array $aPipelines, OutputInterface $oOutput = null): self
+    public function checkConnectors(array $aPipelines): self
     {
         $this
             ->oManager
-            ->setOutputInterface($oOutput)
             ->checkConnectors($aPipelines);
 
         return $this;
@@ -113,16 +190,14 @@ class DataMigration
     /**
      * Prepares the supplied migration Pipelines
      *
-     * @param Pipeline[]           $aPipelines The Pipelines to prepare
-     * @param OutputInterface|null $oOutput    An OutputInterface to log to
+     * @param Pipeline[] $aPipelines The Pipelines to prepare
      *
      * @return $this
      */
-    public function prepare(array $aPipelines, OutputInterface $oOutput = null): self
+    public function prepare(array $aPipelines): self
     {
         $this
             ->oManager
-            ->setOutputInterface($oOutput)
             ->prepare($aPipelines);
 
         return $this;
@@ -133,16 +208,14 @@ class DataMigration
     /**
      * Commits the supplied migration Pipelines
      *
-     * @param Pipeline[]           $aPipelines The Pipelines to commit
-     * @param OutputInterface|null $oOutput    An OutputInterface to log to
+     * @param Pipeline[] $aPipelines The Pipelines to commit
      *
      * @return $this
      */
-    public function commit(array $aPipelines, OutputInterface $oOutput = null): self
+    public function commit(array $aPipelines): self
     {
         $this
             ->oManager
-            ->setOutputInterface($oOutput)
             ->commit($aPipelines);
 
         return $this;
@@ -182,32 +255,5 @@ class DataMigration
     public function getCommitErrors(): array
     {
         return $this->oManager->getCommitErrors();
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Set the dry-run mode
-     *
-     * @param bool $bDryRun Whether to turn on dry-run mode or not
-     *
-     * @return $this
-     */
-    public function setDryRun(bool $bDryRun): self
-    {
-        $this->oManager->setDryRun($bDryRun);
-        return $this;
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
-     * Whether the system is in dry run mode or not
-     *
-     * @return bool
-     */
-    public function isDryRun(): bool
-    {
-        return $this->oManager->isDryRun();
     }
 }
