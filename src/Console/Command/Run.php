@@ -36,6 +36,7 @@ class Run extends Base
             ->setName('datamigration:run')
             ->setDescription('Runs data migration recipes')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Whether to perform a dry-run or not')
+            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED, 'Filter pipelines')
             ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode');
     }
 
@@ -60,6 +61,15 @@ class Run extends Base
         $oService->setDryRun((bool) $oInput->getOption('dry-run'));
 
         $aPipelines = $oService->getPipelines();
+        $sFilter    = $oInput->getOption('filter');
+        if (!empty($sFilter)) {
+            $aPipelines = array_filter(
+                $aPipelines,
+                function (Pipeline $oPipeline) use ($sFilter) {
+                    return strpos(get_class($oPipeline), $sFilter) !== false;
+                }
+            );
+        }
 
         if (empty($aPipelines)) {
             $oOutput->writeln('No data migration pipelines discovered.');
