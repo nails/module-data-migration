@@ -13,6 +13,9 @@ namespace Nails\DataMigration\Service;
 
 use HelloPablo\DataMigration\Interfaces\Pipeline;
 use HelloPablo\DataMigration\Manager;
+use HelloPablo\Exception\PipelineException;
+use HelloPablo\Exception\PipelineException\CommitException;
+use HelloPablo\Exception\PipelineException\PrepareException;
 use Nails\Common\Service\FileCache;
 use Nails\Components;
 use Nails\Factory;
@@ -64,7 +67,7 @@ class DataMigration
     // --------------------------------------------------------------------------
 
     /**
-     * Returns all discovered pipelines
+     * Returns all discovered Pipelines
      *
      * @return Pipeline[]
      */
@@ -83,6 +86,26 @@ class DataMigration
         }
 
         return $aPipelines;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Checks connectors
+     *
+     * @param Pipeline[]           $aPipelines The Pipelines to check
+     * @param OutputInterface|null $oOutput    An OutputInterface to log to
+     *
+     * @return $this
+     */
+    public function checkConnectors(array $aPipelines, OutputInterface $oOutput = null): self
+    {
+        $this
+            ->oManager
+            ->setOutputInterface($oOutput)
+            ->checkConnectors($aPipelines);
+
+        return $this;
     }
 
     // --------------------------------------------------------------------------
@@ -108,16 +131,6 @@ class DataMigration
     // --------------------------------------------------------------------------
 
     /**
-     * @return array
-     */
-    public function prepareErrors(): array
-    {
-        return $this->oManager->getPrepareErrors();
-    }
-
-    // --------------------------------------------------------------------------
-
-    /**
      * Commits the supplied migration Pipelines
      *
      * @param Pipeline[]           $aPipelines The Pipelines to commit
@@ -133,6 +146,42 @@ class DataMigration
             ->commit($aPipelines);
 
         return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns any warnings which have bveen generated
+     *
+     * @return string[]
+     */
+    public function getWarnings(): array
+    {
+        return $this->oManager->getWarnings();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns any errors encountered during preparation
+     *
+     * @return PrepareException[]
+     */
+    public function getPrepareErrors(): array
+    {
+        return $this->oManager->getPrepareErrors();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns any errors encountered during commit
+     *
+     * @return CommitException[]
+     */
+    public function getCommitErrors(): array
+    {
+        return $this->oManager->getCommitErrors();
     }
 
     // --------------------------------------------------------------------------

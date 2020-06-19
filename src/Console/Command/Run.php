@@ -11,6 +11,7 @@
 
 namespace Nails\DataMigration\Console\Command;
 
+use HelloPablo\Exception\PipelineException;
 use Nails\Console\Command\Base;
 use Nails\DataMigration\Constants;
 use Nails\DataMigration\Service\DataMigration;
@@ -54,8 +55,9 @@ class Run extends Base
         $this->banner('Data Migration: Run');
 
         /** @var DataMigration $oService */
-        $oService   = Factory::service('DataMigration', Constants::MODULE_SLUG);
-        $bDryRun    = (bool) $oInput->getOption('dry-run');
+        $oService = Factory::service('DataMigration', Constants::MODULE_SLUG);
+        $oService->setDryRun((bool) $oInput->getOption('dry-run'));
+
         $aPipelines = $oService->getPipelines();
 
         if (empty($aPipelines)) {
@@ -64,7 +66,7 @@ class Run extends Base
             return static::EXIT_CODE_SUCCESS;
         }
 
-        if ($bDryRun) {
+        if ($oService->isDryRun()) {
             $this->outputBlock(['Dry-run: migrations will not be comitted'], 'warning');
             $oOutput->writeln('');
         }
@@ -79,42 +81,106 @@ class Run extends Base
         $oOutput->writeln('');
 
         if ($this->confirm('Continue?', true)) {
-            $oService
-                ->setDryRun($bDryRun)
-                ->prepare($aPipelines, $oOutput);
+
+            $oService->checkConnectors($aPipelines, $oOutput);
+            $aWarnings = $oService->getWarnings();
+            if (!empty($aWarnings) && !$this->renderWarnings($aWarnings, 'testing')) {
+                return static::EXIT_CODE_FAILURE;
+            }
+
+
+            $oService->prepare($aPipelines, $oOutput);
 
             $oOutput->writeln('');
 
-            $aErrors = $oService->prepareErrors();
+            $aErrors   = $oService->getPrepareErrors();
+            $aWarnings = $oService->getWarnings();
 
             if (!empty($aErrors)) {
+                return $this->renderErrors($aErrors, 'preparation');
 
-                $oOutput->writeln('<error>There were errors during preparation:</error>');
-                $oOutput->writeln('');
+            } elseif (!empty($aWarnings) && !$this->renderWarnings($aWarnings, 'preparation')) {
+                return static::EXIT_CODE_FAILURE;
+            }
 
-                foreach ($aErrors as $oError) {
+            if ($this->confirm('Pipelines prepared, ready to commit?', true)) {
 
-                    $oOutput->writeln(sprintf(
-                        '[<info>%s</info>] Source ID: <info>%s</info>; %s',
-                        $oError->pipeline,
-                        $oError->source_id,
-                        $oError->error,
-                    ));
+                $oService->commit($aPipelines, $oOutput);
+
+                $aErrors   = $oService->getCommitErrors();
+                $aWarnings = $oService->getWarnings();
+
+                if (!empty($aErrors)) {
+                    return $this->renderErrors($aErrors, 'commit');
+
+                } elseif (!empty($aWarnings)) {
+                    $this->renderWarnings($aWarnings, 'commit', false);
                 }
 
                 $oOutput->writeln('');
-                $oOutput->writeln('<error>' . count($aErrors) . ' errors detected, migrations were NOT comitted</error>');
-                $oOutput->writeln('');
-
-            } elseif ($this->confirm('Pipelines prepared, ready to commit?', true)) {
-                $oService->commit($aPipelines, $oOutput);
-
-                $oOutput->writeln('');
-                $oOutput->writeln('Finished data migrations');
+                $oOutput->writeln('Finished data migration');
                 $oOutput->writeln('');
             }
         }
 
         return static::EXIT_CODE_SUCCESS;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Renders errors
+     *
+     * @param PipelineException $aErrors The errors to render
+     * @param string            $sLabel  Human friendly label describing when the errors happened
+     *
+     * @return int
+     */
+    protected function renderErrors(array $aErrors, string $sLabel): int
+    {
+        $this->oOutput->writeln('');
+        $this->outputBlock(['There were errors during ' . $sLabel . '.'], 'error');
+        $this->oOutput->writeln('');
+
+        foreach ($aErrors as $oError) {
+            $this->oOutput->writeln(sprintf(
+                '[<info>%s</info>] Source ID: <info>%s</info>; %s',
+                get_class($oError->getPipeline()),
+                $oError->getUnit()->getSourceId(),
+                $oError->getMessage(),
+            ));
+        }
+
+        $this->outputBlock([count($aErrors) . ' errors detected, see above for details.'], 'error');
+        $this->oOutput->writeln('');
+
+        return static::EXIT_CODE_FAILURE;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Renders warnings
+     *
+     * @param string[] $aWarnings      Warnings to render
+     * @param string   $sLabel         Human friendly label describing when the errors happened
+     * @param bool     $bAllowContinue Whether to allow the user to continue
+     *
+     * @return bool
+     */
+    protected function renderWarnings(array $aWarnings, string $sLabel, bool $bAllowContinue = true): bool
+    {
+        $this->oOutput->writeln('');
+        $this->outputBlock(['Warnings were encountered during ' . $sLabel . '.'], 'warning');
+        $this->oOutput->writeln('');
+
+        foreach ($aWarnings as $sWarning) {
+            $this->oOutput->writeln(' – ' . $sWarning);
+        }
+
+        $this->oOutput->writeln('');
+        return $bAllowContinue
+            ? $this->confirm('Continue?', true)
+            : false;
     }
 }
