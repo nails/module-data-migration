@@ -11,6 +11,7 @@
 
 namespace Nails\DataMigration\Console\Command;
 
+use HelloPablo\DataMigration\Interfaces\Pipeline;
 use HelloPablo\Exception\PipelineException;
 use Nails\Console\Command\Base;
 use Nails\DataMigration\Constants;
@@ -58,7 +59,10 @@ class Run extends Base
 
         /** @var DataMigration $oService */
         $oService = Factory::service('DataMigration', Constants::MODULE_SLUG);
-        $oService->setDryRun((bool) $oInput->getOption('dry-run'));
+        $oService
+            ->setOutputInterface($oOutput)
+            ->setDebug((bool) $oInput->getOption('debug'))
+            ->setDryRun((bool) $oInput->getOption('dry-run'));
 
         $aPipelines = $oService->getPipelines();
         $sFilter    = $oInput->getOption('filter');
@@ -93,14 +97,13 @@ class Run extends Base
 
         if ($this->confirm('Continue?', true)) {
 
-            $oService->checkConnectors($aPipelines, $oOutput);
+            $oService->checkConnectors($aPipelines);
             $aWarnings = $oService->getWarnings();
             if (!empty($aWarnings) && !$this->renderWarnings($aWarnings, 'testing')) {
                 return static::EXIT_CODE_FAILURE;
             }
 
-
-            $oService->prepare($aPipelines, $oOutput);
+            $oService->prepare($aPipelines);
 
             $oOutput->writeln('');
 
@@ -116,7 +119,7 @@ class Run extends Base
 
             if ($this->confirm('Pipelines prepared, ready to commit?', true)) {
 
-                $oService->commit($aPipelines, $oOutput);
+                $oService->commit($aPipelines);
 
                 $aErrors   = $oService->getCommitErrors();
                 $aWarnings = $oService->getWarnings();
@@ -162,6 +165,7 @@ class Run extends Base
             ));
         }
 
+        $this->oOutput->writeln('');
         $this->outputBlock([count($aErrors) . ' errors detected, see above for details.'], 'error');
         $this->oOutput->writeln('');
 
