@@ -164,6 +164,10 @@ class DataMigration
             }
         }
 
+        usort($aPipelines, function (Pipeline $oA, Pipeline $oB) {
+            return $oA::getPriority() <=> $oB::getPriority();
+        });
+
         return $aPipelines;
     }
 
