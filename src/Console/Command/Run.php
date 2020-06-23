@@ -12,7 +12,7 @@
 namespace Nails\DataMigration\Console\Command;
 
 use HelloPablo\DataMigration\Interfaces\Pipeline;
-use HelloPablo\Exception\PipelineException;
+use HelloPablo\DataMigration\Exception\PipelineException;
 use Nails\Console\Command\Base;
 use Nails\DataMigration\Constants;
 use Nails\DataMigration\Service\DataMigration;
@@ -156,13 +156,33 @@ class Run extends Base
         $this->outputBlock(['There were errors during ' . $sLabel . '.'], 'error');
         $this->oOutput->writeln('');
 
+        /** @var PipelineException $oError */
         foreach ($aErrors as $oError) {
+
+            $oError->getPrevious();
+
             $this->oOutput->writeln(sprintf(
-                '[<info>%s</info>] Source ID: <info>%s</info>; %s',
+                '<comment>%s</comment>',
                 get_class($oError->getPipeline()),
-                $oError->getUnit()->getSourceId(),
-                $oError->getMessage(),
             ));
+
+            $aItems = array_filter([
+                ['Source ID', $oError->getUnit()->getSourceId()],
+                ['Error', $oError->getMessage()],
+                $oError->getPrevious()
+                    ? ['Exception', get_class($oError->getPrevious())]
+                    : null,
+            ]);
+
+            foreach ($aItems as $aItem) {
+                $this->oOutput->writeln(sprintf(
+                    '↳ <info>%s:</info> %s',
+                    $aItem[0],
+                    $aItem[1],
+                ));
+            }
+
+            $this->oOutput->writeln('');
         }
 
         $this->oOutput->writeln('');
