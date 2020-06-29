@@ -37,7 +37,7 @@ class Run extends Base
             ->setName('datamigration:run')
             ->setDescription('Runs data migration recipes')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Whether to perform a dry-run or not')
-            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED, 'Filter pipelines')
+            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter pipelines', null)
             ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode');
     }
 
@@ -65,12 +65,18 @@ class Run extends Base
             ->setDryRun((bool) $oInput->getOption('dry-run'));
 
         $aPipelines = $oService->getPipelines();
-        $sFilter    = $oInput->getOption('filter');
-        if (!empty($sFilter)) {
+        $aFilter    = $oInput->getOption('filter');
+
+        if (!empty($aFilter)) {
             $aPipelines = array_filter(
                 $aPipelines,
-                function (Pipeline $oPipeline) use ($sFilter) {
-                    return strpos(get_class($oPipeline), $sFilter) !== false;
+                function (Pipeline $oPipeline) use ($aFilter) {
+                    foreach ($aFilter as $sFilter) {
+                        if (strpos(strtolower(get_class($oPipeline)), strtolower($sFilter)) !== false) {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             );
         }
