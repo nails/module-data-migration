@@ -37,7 +37,8 @@ class Run extends Base
             ->setName('datamigration:run')
             ->setDescription('Runs data migration recipes')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Whether to perform a dry-run or not')
-            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter pipelines', null)
+            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter pipelines (only include matches)', null)
+            ->addOption('exclude', 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude matches', null)
             ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode');
     }
 
@@ -65,18 +66,33 @@ class Run extends Base
             ->setDryRun((bool) $oInput->getOption('dry-run'));
 
         $aPipelines = $oService->getPipelines();
-        $aFilter    = $oInput->getOption('filter');
+        $aInclude   = $oInput->getOption('filter');
 
-        if (!empty($aFilter)) {
+        if (!empty($aInclude)) {
             $aPipelines = array_filter(
                 $aPipelines,
-                function (Pipeline $oPipeline) use ($aFilter) {
-                    foreach ($aFilter as $sFilter) {
-                        if (strpos(strtolower(get_class($oPipeline)), strtolower($sFilter)) !== false) {
+                function (Pipeline $oPipeline) use ($aInclude) {
+                    foreach ($aInclude as $sInclude) {
+                        if (strpos(strtolower(get_class($oPipeline)), strtolower($sInclude)) !== false) {
                             return true;
                         }
                     }
                     return false;
+                }
+            );
+        }
+
+        $aExclude = $oInput->getOption('exclude');
+        if (!empty($aExclude)) {
+            $aPipelines = array_filter(
+                $aPipelines,
+                function (Pipeline $oPipeline) use ($aExclude) {
+                    foreach ($aExclude as $sExclude) {
+                        if (strpos(strtolower(get_class($oPipeline)), strtolower($sExclude)) !== false) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
             );
         }
