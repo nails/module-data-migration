@@ -39,7 +39,8 @@ class Run extends Base
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Whether to perform a dry-run or not')
             ->addOption('filter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter pipelines (only include matches)', null)
             ->addOption('exclude', 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude matches', null)
-            ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode');
+            ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode')
+            ->addOption('memory', 'm', InputOption::VALUE_REQUIRED, 'Set memory limit (in MB)');
     }
 
     // --------------------------------------------------------------------------
@@ -64,6 +65,11 @@ class Run extends Base
             ->setOutputInterface($oOutput)
             ->setDebug((bool) $oInput->getOption('debug'))
             ->setDryRun((bool) $oInput->getOption('dry-run'));
+
+        $iMemory = (int) $oInput->getOption('memory');
+        if (!empty($sMemory)) {
+            ini_set('memory_limit', $iMemory . 'M');
+        }
 
         $aPipelines = $oService->getPipelines();
         $aInclude   = $oInput->getOption('filter');
