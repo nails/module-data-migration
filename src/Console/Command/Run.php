@@ -40,7 +40,8 @@ class Run extends Base
             ->addOption('filter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Filter pipelines (only include matches)', null)
             ->addOption('exclude', 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude matches', null)
             ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode')
-            ->addOption('memory', 'm', InputOption::VALUE_REQUIRED, 'Set memory limit (in MB)');
+            ->addOption('memory', 'm', InputOption::VALUE_REQUIRED, 'Set memory limit (in MB)')
+            ->addOption('stop-on-error', 's', InputOption::VALUE_NONE, 'Stop on first error, rather than summarrise');
     }
 
     // --------------------------------------------------------------------------
@@ -64,7 +65,8 @@ class Run extends Base
         $oService
             ->setOutputInterface($oOutput)
             ->setDebug((bool) $oInput->getOption('debug'))
-            ->setDryRun((bool) $oInput->getOption('dry-run'));
+            ->setDryRun((bool) $oInput->getOption('dry-run'))
+            ->setStopOnError((bool) $oInput->getOption('stop-on-error'));
 
         $iMemory = (int) $oInput->getOption('memory');
         if (!empty($sMemory)) {

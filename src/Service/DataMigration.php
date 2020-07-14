@@ -146,6 +146,33 @@ class DataMigration
     // --------------------------------------------------------------------------
 
     /**
+     * Set error mode
+     *
+     * @param bool $bStopOnError Whether to turn stop on error, or summarrise errors
+     *
+     * @return $this
+     */
+    public function setStopOnError(bool $bStopOnError): self
+    {
+        $this->oManager->setStopOnError($bStopOnError);
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Whether the system will stop on error
+     *
+     * @return bool
+     */
+    public function isStopOnError(): bool
+    {
+        return $this->oManager->isStopOnError();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Returns all discovered Pipelines
      *
      * @return Pipeline[]
