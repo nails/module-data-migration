@@ -92,6 +92,40 @@ class DataMigration
     // --------------------------------------------------------------------------
 
     /**
+     * Sets the log file to use
+     *
+     * @param resource|null $rLogFile
+     */
+    public function setLogFile($rLogFile): self
+    {
+        if (!is_null($rLogFile) && !is_resource($rLogFile)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Argument must be a valid resource type. %s given.',
+                    gettype($rLogFile)
+                )
+            );
+        }
+
+        $this->oManager->setLogFile($rLogFile);
+        return $this;
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
+     * Returns the active log file
+     *
+     * @return resource|null
+     */
+    public function getLogFile()
+    {
+        return $this->oManager->getLogFile();
+    }
+
+    // --------------------------------------------------------------------------
+
+    /**
      * Set the debug mode
      *
      * @param bool $bDebug Whether to turn on debug mode or not

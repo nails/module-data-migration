@@ -13,6 +13,7 @@ namespace Nails\DataMigration\Console\Command;
 
 use HelloPablo\DataMigration\Interfaces\Pipeline;
 use HelloPablo\DataMigration\Exception\PipelineException;
+use Nails\Common\Factory\Logger;
 use Nails\Console\Command\Base;
 use Nails\DataMigration\Constants;
 use Nails\DataMigration\Service\DataMigration;
@@ -41,6 +42,7 @@ class Run extends Base
             ->addOption('exclude', 'e', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude matches', null)
             ->addOption('debug', 'd', InputOption::VALUE_NONE, 'Run in debug mode')
             ->addOption('memory', 'm', InputOption::VALUE_REQUIRED, 'Set memory limit (in MB)')
+            ->addOption('log-file', 'l', InputOption::VALUE_REQUIRED, 'Change the log file to write to')
             ->addOption('stop-on-error', 's', InputOption::VALUE_NONE, 'Stop on first error, rather than summarrise');
     }
 
@@ -60,10 +62,19 @@ class Run extends Base
         parent::execute($oInput, $oOutput);
         $this->banner('Data Migration: Run');
 
+        /** @var Logger $oLogger */
+        $oLogger = Factory::factory('Logger');
+        /** @var \DateTime $oNow */
+        $oNow = Factory::factory('DateTime');
+        $oLogger->setFile(
+            $oInput->getOption('log-file') ?? 'data-migration-' . $oNow->format('Y-m-d-H-i-s') . '.php'
+        );
+
         /** @var DataMigration $oService */
         $oService = Factory::service('DataMigration', Constants::MODULE_SLUG);
         $oService
             ->setOutputInterface($oOutput)
+            ->setLogFile($oLogger->getStream())
             ->setDebug((bool) $oInput->getOption('debug'))
             ->setDryRun((bool) $oInput->getOption('dry-run'))
             ->setStopOnError((bool) $oInput->getOption('stop-on-error'));
