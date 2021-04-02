@@ -218,7 +218,8 @@ class DataMigration
 
             $aClasses = $oComponent
                 ->findClasses('DataMigration\\Pipeline')
-                ->whichImplement(Pipeline::class);
+                ->whichImplement(Pipeline::class)
+                ->whichCanBeInstantiated();
 
             foreach ($aClasses as $sClass) {
                 $aPipelines[] = new $sClass();
