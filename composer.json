@@ -7,7 +7,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "nails\/common": "dev-develop",
+        "nails\/common": "dev-feature/pre-new-admin",
         "hellopablo\/data-migration": "dev-develop"
     },
     "require-dev": {
