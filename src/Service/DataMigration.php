@@ -36,7 +36,7 @@ class DataMigration
     /**
      * DataMigration constructor.
      */
-    public function __construct(Manager $oManager = null)
+    public function __construct(?Manager $oManager = null)
     {
         if ($oManager === null) {
             /** @var FileCache $oFileCache */
