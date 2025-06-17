@@ -40,7 +40,7 @@
     {
         "nails":
         {
-            "moduleName": "module-data-migration",
+            "moduleName": "data-migration",
             "type": "module",
             "namespace": "Nails\\DataMigration\\",
             "data":
