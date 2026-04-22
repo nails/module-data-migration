@@ -1,50 +1,40 @@
 {
     "name": "nails/module-data-migration",
-    "keywords":
-    [],
+    "keywords": [],
     "homepage": "https://docs.nailsapp.co.uk/modules/other/data-migration",
     "description": "The Data Migration module provides a framework for structured data migration from external sources into the app.",
     "license": "MIT",
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "require":
-    {
+    "require": {
+        "php": ">=8.3",
         "nails/common": "dev-feature/pre-new-admin",
         "hellopablo/data-migration": "dev-develop"
     },
-    "require-dev":
-    {
-        "phpunit/phpunit": "9.*",
-        "phpstan/phpstan": "1.*"
+    "require-dev": {
+        "phpunit/phpunit": "^12.0",
+        "phpstan/phpstan": "^2.0"
     },
-    "scripts":
-    {
+    "scripts": {
         "test": "./vendor/bin/phpunit",
         "analyse": "./vendor/bin/phpstan analyse -c .phpstan/config.neon"
     },
-    "autoload":
-    {
-        "psr-4":
-        {
+    "autoload": {
+        "psr-4": {
             "Nails\\DataMigration\\": "src/"
         }
     },
-    "autoload-dev":
-    {
-        "psr-4":
-        {
+    "autoload-dev": {
+        "psr-4": {
             "Nails\\DataMigration\\Tests\\": "src/"
         }
     },
-    "extra":
-    {
-        "nails":
-        {
+    "extra": {
+        "nails": {
             "moduleName": "dataMigration",
             "type": "module",
             "namespace": "Nails\\DataMigration\\",
-            "data":
-            {}
+            "data": {}
         }
     }
 }
